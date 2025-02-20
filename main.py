@@ -4,17 +4,22 @@ import random
 
 pygame.init()
 
-difficulty = input("With what difficulty would you want to play with? {E} easy, {N} normal, {H} hard: ")
+difficulty =  "N"   #input("With what difficulty would you want to play with? {E} easy, {N} normal, {H} hard: ")
 
 if difficulty.upper() == "E":
     BALL_SPEED = 3
     PADDLE_SPEED = 5
-elif difficulty.upper() == "N" or None:
+elif difficulty.upper() == "N":
     BALL_SPEED = 5
     PADDLE_SPEED = 7
 elif difficulty.upper() == "H":
     BALL_SPEED = 7
     PADDLE_SPEED = 9
+else:
+    BALL_SPEED = 5
+    PADDLE_SPEED = 7
+
+first_run = True
 
 WIDTH = 800
 HEIGHT = 600
@@ -67,9 +72,35 @@ while running:
         player_paddle.y -= PADDLE_SPEED
 
     
+    if first_run:
 
+        countdown_font = pygame.font.Font(None, 60)
 
-    
+        countdown = countdown_font.render("3", True, WHITE)
+        screen.blit(countdown, (WIDTH//2-countdown.get_width()//2, HEIGHT//2-countdown.get_height()//2))
+        pygame.display.flip()
+        pygame.time.delay(1000)
+        screen.fill(BLACK)
+
+        countdown = countdown_font.render("2", True, WHITE)
+        screen.blit(countdown, (WIDTH//2-countdown.get_width()//2, HEIGHT//2-countdown.get_height()//2))
+        pygame.display.flip()
+        pygame.time.delay(1000)
+        screen.fill(BLACK)
+
+        countdown = countdown_font.render("1", True, WHITE)
+        screen.blit(countdown, (WIDTH//2-countdown.get_width()//2, HEIGHT//2-countdown.get_height()//2))
+        pygame.display.flip()
+        pygame.time.delay(1000)
+        screen.fill(BLACK)
+
+        countdown = countdown_font.render("", True, WHITE)
+        screen.blit(countdown, (WIDTH//2-countdown.get_width()//2, HEIGHT//2-countdown.get_height()//2))
+        pygame.display.flip()
+
+        
+        first_run = False
+
 
     ball.x += ball_dx
     ball.y += ball_dy
@@ -110,9 +141,9 @@ while running:
 
     
     if opponent_paddle.y < ball.y:
-        opponent_paddle.y += PADDLE_SPEED-2
+        opponent_paddle.y += PADDLE_SPEED
     elif opponent_paddle.y > ball.y:
-        opponent_paddle.y -= PADDLE_SPEED-2
+        opponent_paddle.y -= PADDLE_SPEED
 
 
 
