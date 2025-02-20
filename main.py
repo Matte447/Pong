@@ -1,23 +1,43 @@
 import pygame
+import random
 
 
 pygame.init()
 
+difficulty = input("With what difficulty would you want to play with? {E} easy, {N} normal, {H} hard: ")
+
+if difficulty.upper() == "E":
+    BALL_SPEED = 3
+    PADDLE_SPEED = 5
+elif difficulty.upper() == "N" or None:
+    BALL_SPEED = 5
+    PADDLE_SPEED = 7
+elif difficulty.upper() == "H":
+    BALL_SPEED = 7
+    PADDLE_SPEED = 9
+
 WIDTH = 800
 HEIGHT = 600
-BALL_SPEED = 5
-PADDLE_SPEED = 7
+
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+
+own_score = 0
+opponent_score = 0
+
+font = pygame.font.Font(None, 36)
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 pygame.display.set_caption("Pong Game")
 
-ball = pygame.Rect(WIDTH//2-10, HEIGHT//2-10, 20, 20)
+ball = pygame.Rect((WIDTH//2-10), random.randint(0, HEIGHT-20), 20, 20)
 player_paddle = pygame.Rect(WIDTH - 20, HEIGHT//2-50, 10, 100)
 opponent_paddle = pygame.Rect(10, HEIGHT//2-50, 10, 100)
+
+
+
 
 ball_dx, ball_dy = BALL_SPEED, BALL_SPEED
 
@@ -47,6 +67,10 @@ while running:
         player_paddle.y -= PADDLE_SPEED
 
     
+
+
+    
+
     ball.x += ball_dx
     ball.y += ball_dy
 
@@ -56,11 +80,42 @@ while running:
     if ball.colliderect(player_paddle) or ball.colliderect(opponent_paddle):
         ball_dx *= -1
 
-    if ball.left <= 0 or ball.right >= WIDTH:
-        ball.x, ball.y = WIDTH//2 - 10, HEIGHT//2 - 10
-        ball_dx, ball_dy = BALL_SPEED, BALL_SPEED
+        # Ändert die Flugbahn basierend auf der Position des Schlägers
+        if keys[pygame.K_DOWN]:
+            ball_dy += 0.5
+        if keys[pygame.K_UP]:
+            ball_dy -= 0.5
+        if opponent_paddle.centery < ball.centery:
+            ball_dy += 0.5
+        if opponent_paddle.centery > ball.centery:
+            ball_dy -= 0.5
+
+    if ball.left <= 0:
+        ball.x, ball.y = WIDTH//2 - 10, random.randint(0, HEIGHT-20)
+        ball_dx, ball_dy = random.choice([-BALL_SPEED, BALL_SPEED]), random.choice([-BALL_SPEED, BALL_SPEED])
         player_paddle.y = HEIGHT//2 - 50
         opponent_paddle.y = HEIGHT//2 - 50
+
+        own_score += 1
+
+    if ball.right >= WIDTH:
+        ball.x, ball.y = WIDTH//2 - 10, random.randint(0, HEIGHT-20)
+        ball_dx, ball_dy = random.choice([-BALL_SPEED, BALL_SPEED]), random.choice([-BALL_SPEED, BALL_SPEED])
+        player_paddle.y = HEIGHT//2 - 50
+        opponent_paddle.y = HEIGHT//2 - 50
+
+        opponent_score += 1
+
+
+
+    
+    if opponent_paddle.y < ball.y:
+        opponent_paddle.y += PADDLE_SPEED-2
+    elif opponent_paddle.y > ball.y:
+        opponent_paddle.y -= PADDLE_SPEED-2
+
+
+
 
 
 
@@ -70,6 +125,17 @@ while running:
 
     if player_paddle.bottom >= HEIGHT:
         player_paddle.bottom = HEIGHT
+
+
+        if opponent_paddle.top <= 0:
+            opponent_paddle.top = 0
+
+
+    if opponent_paddle.bottom >= HEIGHT:
+        opponent_paddle.bottom = HEIGHT
+
+    score_text = font.render(f"{opponent_score} - {own_score}", True, WHITE)
+    screen.blit(score_text, (WIDTH//2 - score_text.get_width()//2, 20))
 
 
     pygame.draw.rect(screen, WHITE, player_paddle)
