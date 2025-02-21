@@ -4,7 +4,6 @@ import random
 # Pygame initialisieren
 pygame.init()
 
-
 dif_ball_speed = 0
 
 # Fenstergröße
@@ -29,6 +28,7 @@ def draw_text(text, x, y, color=WHITE):
 # Menü-Funktion
 def menu():
     selected_difficulty = "N"  # Standardmäßig "Normal"
+    game_mode = "KI"  # Standardmäßig KI-Gegner
 
     running = True
     while running:
@@ -44,7 +44,14 @@ def menu():
         draw_text("E - Einfach", WIDTH//2 - 100, 260, color_e)
         draw_text("N - Normal", WIDTH//2 - 100, 300, color_n)
         draw_text("H - Schwer", WIDTH//2 - 100, 340, color_h)
-        draw_text("Drücke Enter zum Starten", WIDTH//2 - 200, 400)
+        
+        draw_text("Spielmodus wählen:", WIDTH//2 - 200, 400)
+        color_ki = WHITE if game_mode == "KI" else (100, 100, 100)
+        color_1v1 = WHITE if game_mode == "1v1" else (100, 100, 100)
+        draw_text("1 - KI-Gegner", WIDTH//2 - 100, 440, color_ki)
+        draw_text("2 - 1 vs 1", WIDTH//2 - 100, 480, color_1v1)
+
+        draw_text("Drücke Enter zum Starten", WIDTH//2 - 200, 520)
 
         pygame.display.flip()
 
@@ -59,13 +66,17 @@ def menu():
                     selected_difficulty = "N"
                 if event.key == pygame.K_h:
                     selected_difficulty = "H"
+                if event.key == pygame.K_1:
+                    game_mode = "KI"
+                if event.key == pygame.K_2:
+                    game_mode = "1v1"
                 if event.key == pygame.K_RETURN:
                     running = False  # Menü verlassen und Spiel starten
 
-    return selected_difficulty  # Schwierigkeit zurückgeben
+    return selected_difficulty, game_mode  # Schwierigkeit und Spielmodus zurückgeben
 
-# Menü starten und Schwierigkeit wählen
-difficulty = menu()
+# Menü starten und Einstellungen übernehmen
+difficulty, game_mode = menu()
 
 # Schwierigkeitseinstellungen
 if difficulty == "E":
@@ -81,7 +92,7 @@ elif difficulty == "H":
     ball_speed = 7
     PADDLE_SPEED = 9
 
-print(ball_speed)
+print(f"Schwierigkeit: {difficulty}, Spielmodus: {game_mode}")
 
 # Spielvariablen
 own_score = 0
@@ -165,10 +176,19 @@ while running:
         print(ball_speed)
 
     # Gegner-KI bewegt sich zum Ball
-    if opponent_paddle.centery < ball.centery:
-        opponent_paddle.y += PADDLE_SPEED
-    elif opponent_paddle.centery > ball.centery:
-        opponent_paddle.y -= PADDLE_SPEED
+    if game_mode == "KI":
+        error_margin = random.randint(-30, 30)  # KI macht kleine Fehler
+        predicted_y = ball.y + ((ball_dx * (opponent_paddle.x - ball.x)) / ball_dx) + error_margin
+    
+        if opponent_paddle.centery < predicted_y:
+            opponent_paddle.y += PADDLE_SPEED - 2
+        elif opponent_paddle.centery > predicted_y:
+            opponent_paddle.y -= PADDLE_SPEED - 2
+    else:
+        if keys[pygame.K_w] and opponent_paddle.top > 0:
+            opponent_paddle.y -= PADDLE_SPEED
+        if keys[pygame.K_s] and opponent_paddle.bottom < HEIGHT:
+            opponent_paddle.y += PADDLE_SPEED
 
     if opponent_paddle.top < 0:
         opponent_paddle.top = 0
