@@ -4,6 +4,9 @@ import random
 # Pygame initialisieren
 pygame.init()
 
+
+dif_ball_speed = 0
+
 # Fenstergröße
 WIDTH, HEIGHT = 800, 600
 
@@ -66,14 +69,19 @@ difficulty = menu()
 
 # Schwierigkeitseinstellungen
 if difficulty == "E":
-    BALL_SPEED = 3
+    dif_ball_speed = 3
+    ball_speed = 3
     PADDLE_SPEED = 5
 elif difficulty == "N":
-    BALL_SPEED = 5
+    dif_ball_speed = 5
+    ball_speed = 5
     PADDLE_SPEED = 7
 elif difficulty == "H":
-    BALL_SPEED = 7
+    dif_ball_speed = 7
+    ball_speed = 7
     PADDLE_SPEED = 9
+
+print(ball_speed)
 
 # Spielvariablen
 own_score = 0
@@ -85,7 +93,7 @@ player_paddle = pygame.Rect(WIDTH - 20, HEIGHT//2 - 50, 10, 100)
 opponent_paddle = pygame.Rect(10, HEIGHT//2 - 50, 10, 100)
 
 # Ballbewegung
-ball_dx, ball_dy = random.choice([-BALL_SPEED, BALL_SPEED]), random.choice([-BALL_SPEED, BALL_SPEED])
+ball_dx, ball_dy = random.choice([-ball_speed, ball_speed]), random.choice([-ball_speed, ball_speed])
 
 # Countdown vor Spielbeginn
 countdown_font = pygame.font.Font(None, 60)
@@ -113,6 +121,10 @@ while running:
     if keys[pygame.K_UP] and player_paddle.top > 0:
         player_paddle.y -= PADDLE_SPEED
 
+    
+    
+
+
     # Ballbewegung
     ball.x += ball_dx
     ball.y += ball_dy
@@ -121,39 +133,47 @@ while running:
     if ball.top <= 0 or ball.bottom >= HEIGHT:
         ball_dy *= -1
 
-    # Ball trifft auf Schläger
     if ball.colliderect(player_paddle) or ball.colliderect(opponent_paddle):
         ball_dx *= -1
+        ball_speed *= 1.01  # Ball wird schneller
 
-        # Flugbahn leicht verändern, wenn sich der Schläger bewegt
-        if keys[pygame.K_DOWN]:
-            ball_dy += 0.5
-        if keys[pygame.K_UP]:
-            ball_dy -= 0.5
-        if opponent_paddle.centery < ball.centery:
-            ball_dy += 0.5
-        if opponent_paddle.centery > ball.centery:
-            ball_dy -= 0.5
+        # Geschwindigkeit aktualisieren
+        ball_dx = (ball_dx / abs(ball_dx)) * ball_speed
+        ball_dy = (ball_dy / abs(ball_dy)) * ball_speed
+
+        print(ball_speed)
+
+
+
 
     # Punkt für Gegner
     if ball.left <= 0:
         opponent_score += 1
         ball.x, ball.y = WIDTH//2 - 10, random.randint(0, HEIGHT-20)
-        ball_dx, ball_dy = random.choice([-BALL_SPEED, BALL_SPEED]), random.choice([-BALL_SPEED, BALL_SPEED])
+        ball_dx, ball_dy = random.choice([-ball_speed, ball_speed]), random.choice([-ball_speed, ball_speed])
         player_paddle.y, opponent_paddle.y = HEIGHT//2 - 50, HEIGHT//2 - 50
+        ball_speed = dif_ball_speed
+        print(ball_speed)
 
     # Punkt für Spieler
     if ball.right >= WIDTH:
         own_score += 1
         ball.x, ball.y = WIDTH//2 - 10, random.randint(0, HEIGHT-20)
-        ball_dx, ball_dy = random.choice([-BALL_SPEED, BALL_SPEED]), random.choice([-BALL_SPEED, BALL_SPEED])
+        ball_dx, ball_dy = random.choice([-ball_speed, ball_speed]), random.choice([-ball_speed, ball_speed])
         player_paddle.y, opponent_paddle.y = HEIGHT//2 - 50, HEIGHT//2 - 50
+        ball_speed = dif_ball_speed
+        print(ball_speed)
 
     # Gegner-KI bewegt sich zum Ball
     if opponent_paddle.centery < ball.centery:
         opponent_paddle.y += PADDLE_SPEED
     elif opponent_paddle.centery > ball.centery:
         opponent_paddle.y -= PADDLE_SPEED
+
+    if opponent_paddle.top < 0:
+        opponent_paddle.top = 0
+    if opponent_paddle.bottom > HEIGHT:
+        opponent_paddle.bottom = HEIGHT
 
     # Punktestand anzeigen
     score_text = font.render(f"{opponent_score} - {own_score}", True, WHITE)
