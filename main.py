@@ -1,117 +1,131 @@
 import pygame
 import random
 
-
+# Pygame initialisieren
 pygame.init()
 
-difficulty =  "N"   #input("With what difficulty would you want to play with? {E} easy, {N} normal, {H} hard: ")
+# Fenstergröße
+WIDTH, HEIGHT = 800, 600
 
-if difficulty.upper() == "E":
-    BALL_SPEED = 3
-    PADDLE_SPEED = 5
-elif difficulty.upper() == "N":
-    BALL_SPEED = 5
-    PADDLE_SPEED = 7
-elif difficulty.upper() == "H":
-    BALL_SPEED = 7
-    PADDLE_SPEED = 9
-else:
-    BALL_SPEED = 5
-    PADDLE_SPEED = 7
-
-first_run = True
-
-WIDTH = 800
-HEIGHT = 600
-
-
+# Farben
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
+# Bildschirm erstellen
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Pong Game")
+
+# Schriftart für das Menü und Spiel
+font = pygame.font.Font(None, 50)
+
+# Funktion zum Zeichnen von Text auf dem Bildschirm
+def draw_text(text, x, y, color=WHITE):
+    label = font.render(text, True, color)
+    screen.blit(label, (x, y))
+
+# Menü-Funktion
+def menu():
+    selected_difficulty = "N"  # Standardmäßig "Normal"
+
+    running = True
+    while running:
+        screen.fill(BLACK)
+        draw_text("Pong Game", WIDTH//2 - 100, 100)
+        draw_text("Schwierigkeit wählen:", WIDTH//2 - 200, 200)
+        
+        # Markierung der gewählten Schwierigkeit
+        color_e = WHITE if selected_difficulty == "E" else (100, 100, 100)
+        color_n = WHITE if selected_difficulty == "N" else (100, 100, 100)
+        color_h = WHITE if selected_difficulty == "H" else (100, 100, 100)
+        
+        draw_text("E - Einfach", WIDTH//2 - 100, 260, color_e)
+        draw_text("N - Normal", WIDTH//2 - 100, 300, color_n)
+        draw_text("H - Schwer", WIDTH//2 - 100, 340, color_h)
+        draw_text("Drücke Enter zum Starten", WIDTH//2 - 200, 400)
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_e:
+                    selected_difficulty = "E"
+                if event.key == pygame.K_n:
+                    selected_difficulty = "N"
+                if event.key == pygame.K_h:
+                    selected_difficulty = "H"
+                if event.key == pygame.K_RETURN:
+                    running = False  # Menü verlassen und Spiel starten
+
+    return selected_difficulty  # Schwierigkeit zurückgeben
+
+# Menü starten und Schwierigkeit wählen
+difficulty = menu()
+
+# Schwierigkeitseinstellungen
+if difficulty == "E":
+    BALL_SPEED = 3
+    PADDLE_SPEED = 5
+elif difficulty == "N":
+    BALL_SPEED = 5
+    PADDLE_SPEED = 7
+elif difficulty == "H":
+    BALL_SPEED = 7
+    PADDLE_SPEED = 9
+
+# Spielvariablen
 own_score = 0
 opponent_score = 0
 
-font = pygame.font.Font(None, 36)
+# Ball und Schläger erstellen
+ball = pygame.Rect(WIDTH//2 - 10, random.randint(0, HEIGHT-20), 20, 20)
+player_paddle = pygame.Rect(WIDTH - 20, HEIGHT//2 - 50, 10, 100)
+opponent_paddle = pygame.Rect(10, HEIGHT//2 - 50, 10, 100)
 
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+# Ballbewegung
+ball_dx, ball_dy = random.choice([-BALL_SPEED, BALL_SPEED]), random.choice([-BALL_SPEED, BALL_SPEED])
 
-pygame.display.set_caption("Pong Game")
+# Countdown vor Spielbeginn
+countdown_font = pygame.font.Font(None, 60)
+for i in range(3, 0, -1):
+    screen.fill(BLACK)
+    draw_text(str(i), WIDTH//2 - 20, HEIGHT//2 - 30)
+    pygame.display.flip()
+    pygame.time.delay(1000)
 
-ball = pygame.Rect((WIDTH//2-10), random.randint(0, HEIGHT-20), 20, 20)
-player_paddle = pygame.Rect(WIDTH - 20, HEIGHT//2-50, 10, 100)
-opponent_paddle = pygame.Rect(10, HEIGHT//2-50, 10, 100)
-
-
-
-
-ball_dx, ball_dy = BALL_SPEED, BALL_SPEED
-
-
-
-
-
-
+# Spiel-Loop
 running = True
-
 while running:
     pygame.time.delay(16)
     screen.fill(BLACK)
 
-
-
+    # Event-Handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-
-
+    # Spielerbewegung
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_DOWN]:
+    if keys[pygame.K_DOWN] and player_paddle.bottom < HEIGHT:
         player_paddle.y += PADDLE_SPEED
-    if keys[pygame.K_UP]:
+    if keys[pygame.K_UP] and player_paddle.top > 0:
         player_paddle.y -= PADDLE_SPEED
 
-    
-    if first_run:
-
-        countdown_font = pygame.font.Font(None, 60)
-
-        countdown = countdown_font.render("3", True, WHITE)
-        screen.blit(countdown, (WIDTH//2-countdown.get_width()//2, HEIGHT//2-countdown.get_height()//2))
-        pygame.display.flip()
-        pygame.time.delay(1000)
-        screen.fill(BLACK)
-
-        countdown = countdown_font.render("2", True, WHITE)
-        screen.blit(countdown, (WIDTH//2-countdown.get_width()//2, HEIGHT//2-countdown.get_height()//2))
-        pygame.display.flip()
-        pygame.time.delay(1000)
-        screen.fill(BLACK)
-
-        countdown = countdown_font.render("1", True, WHITE)
-        screen.blit(countdown, (WIDTH//2-countdown.get_width()//2, HEIGHT//2-countdown.get_height()//2))
-        pygame.display.flip()
-        pygame.time.delay(1000)
-        screen.fill(BLACK)
-
-        countdown = countdown_font.render("", True, WHITE)
-        screen.blit(countdown, (WIDTH//2-countdown.get_width()//2, HEIGHT//2-countdown.get_height()//2))
-        pygame.display.flip()
-
-        
-        first_run = False
-
-
+    # Ballbewegung
     ball.x += ball_dx
     ball.y += ball_dy
 
+    # Ball prallt an Decke und Boden ab
     if ball.top <= 0 or ball.bottom >= HEIGHT:
         ball_dy *= -1
 
+    # Ball trifft auf Schläger
     if ball.colliderect(player_paddle) or ball.colliderect(opponent_paddle):
         ball_dx *= -1
 
-        # Ändert die Flugbahn basierend auf der Position des Schlägers
+        # Flugbahn leicht verändern, wenn sich der Schläger bewegt
         if keys[pygame.K_DOWN]:
             ball_dy += 0.5
         if keys[pygame.K_UP]:
@@ -121,62 +135,36 @@ while running:
         if opponent_paddle.centery > ball.centery:
             ball_dy -= 0.5
 
+    # Punkt für Gegner
     if ball.left <= 0:
-        ball.x, ball.y = WIDTH//2 - 10, random.randint(0, HEIGHT-20)
-        ball_dx, ball_dy = random.choice([-BALL_SPEED, BALL_SPEED]), random.choice([-BALL_SPEED, BALL_SPEED])
-        player_paddle.y = HEIGHT//2 - 50
-        opponent_paddle.y = HEIGHT//2 - 50
-
-        own_score += 1
-
-    if ball.right >= WIDTH:
-        ball.x, ball.y = WIDTH//2 - 10, random.randint(0, HEIGHT-20)
-        ball_dx, ball_dy = random.choice([-BALL_SPEED, BALL_SPEED]), random.choice([-BALL_SPEED, BALL_SPEED])
-        player_paddle.y = HEIGHT//2 - 50
-        opponent_paddle.y = HEIGHT//2 - 50
-
         opponent_score += 1
+        ball.x, ball.y = WIDTH//2 - 10, random.randint(0, HEIGHT-20)
+        ball_dx, ball_dy = random.choice([-BALL_SPEED, BALL_SPEED]), random.choice([-BALL_SPEED, BALL_SPEED])
+        player_paddle.y, opponent_paddle.y = HEIGHT//2 - 50, HEIGHT//2 - 50
 
+    # Punkt für Spieler
+    if ball.right >= WIDTH:
+        own_score += 1
+        ball.x, ball.y = WIDTH//2 - 10, random.randint(0, HEIGHT-20)
+        ball_dx, ball_dy = random.choice([-BALL_SPEED, BALL_SPEED]), random.choice([-BALL_SPEED, BALL_SPEED])
+        player_paddle.y, opponent_paddle.y = HEIGHT//2 - 50, HEIGHT//2 - 50
 
-
-    
-    if opponent_paddle.y < ball.y:
+    # Gegner-KI bewegt sich zum Ball
+    if opponent_paddle.centery < ball.centery:
         opponent_paddle.y += PADDLE_SPEED
-    elif opponent_paddle.y > ball.y:
+    elif opponent_paddle.centery > ball.centery:
         opponent_paddle.y -= PADDLE_SPEED
 
-
-
-
-
-
-    if player_paddle.top <= 0:
-        player_paddle.top = 0
-
-
-    if player_paddle.bottom >= HEIGHT:
-        player_paddle.bottom = HEIGHT
-
-
-        if opponent_paddle.top <= 0:
-            opponent_paddle.top = 0
-
-
-    if opponent_paddle.bottom >= HEIGHT:
-        opponent_paddle.bottom = HEIGHT
-
+    # Punktestand anzeigen
     score_text = font.render(f"{opponent_score} - {own_score}", True, WHITE)
     screen.blit(score_text, (WIDTH//2 - score_text.get_width()//2, 20))
 
-
+    # Spielfeld zeichnen
     pygame.draw.rect(screen, WHITE, player_paddle)
     pygame.draw.rect(screen, WHITE, opponent_paddle)
     pygame.draw.ellipse(screen, WHITE, ball)
     pygame.draw.aaline(screen, WHITE, (WIDTH//2, 0), (WIDTH//2, HEIGHT))
-    
+
     pygame.display.flip()
-
-
-
 
 pygame.quit()
