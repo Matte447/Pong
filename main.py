@@ -177,13 +177,22 @@ while running:
 
     # Gegner-KI bewegt sich zum Ball
     if game_mode == "KI":
-        error_margin = random.randint(-30, 30)  # KI macht kleine Fehler
-        predicted_y = ball.y + ((ball_dx * (opponent_paddle.x - ball.x)) / ball_dx) + error_margin
-    
-        if opponent_paddle.centery < predicted_y:
-            opponent_paddle.y += PADDLE_SPEED - 2
-        elif opponent_paddle.centery > predicted_y:
-            opponent_paddle.y -= PADDLE_SPEED - 2
+        if ball_dx < 0:  # Ball bewegt sich nach links zur KI
+            frames_until_impact = abs((opponent_paddle.x - ball.x) / ball_dx)  # Wie lange dauert es, bis der Ball ankommt?
+            predicted_y = ball.y + (ball_dy * frames_until_impact)  # Wo landet der Ball?
+
+            # Fehler hinzufügen, damit die KI nicht zu perfekt ist
+            error_margin = random.randint(-65, 65)
+            predicted_y += error_margin
+
+            # Begrenzung, damit die KI nicht über das Spielfeld hinausgeht
+            predicted_y = max(0, min(HEIGHT, predicted_y))
+
+            # Bewegen der KI
+            if opponent_paddle.centery < predicted_y:
+                opponent_paddle.y += PADDLE_SPEED - 2
+            elif opponent_paddle.centery > predicted_y:
+                opponent_paddle.y -= PADDLE_SPEED - 2
     else:
         if keys[pygame.K_w] and opponent_paddle.top > 0:
             opponent_paddle.y -= PADDLE_SPEED
